@@ -38,6 +38,10 @@ jobs:
         working-directory: website
         run: npm ci
 
+      - name: Clear build caches
+        working-directory: website
+        run: rm -rf .docusaurus build
+
       - name: Generate llms-full.txt
         run: ./scripts/generate-llms-full.sh
 
