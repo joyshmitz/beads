@@ -168,30 +168,31 @@ development_status:
     status: done
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # Epic 5: Quality Assurance Pipeline [P2] ⏳ BLOCKED
+  # Epic 5: Quality Assurance Pipeline [P2] ✅ DONE
   # ═══════════════════════════════════════════════════════════════════════════
   epic-5:
-    status: in-progress
+    status: done
     beads_id: bd-yip
     title: "Quality Assurance Pipeline"
-    blocked_by: bd-907
 
   5-1-add-link-checker-to-ci:
-    status: ready-for-dev
+    status: done
     beads_id: bd-yip.1
     assignee: DevOps
     title: "Add Link Checker to CI"
     story_file: stories/5-1-add-link-checker-to-ci.md
 
   5-2-add-token-count-validation:
-    status: backlog
+    status: done
     beads_id: bd-yip.2
+    story_file: stories/5-2-add-token-count-validation.md
     assignee: DevOps
     title: "Add Token Count Validation"
 
   5-3-add-llms-txt-lint-check:
-    status: backlog
+    status: done
     beads_id: bd-yip.3
+    story_file: stories/5-3-add-llms-txt-lint-check.md
     assignee: DevOps
     title: "Add llms.txt Lint Check"
 

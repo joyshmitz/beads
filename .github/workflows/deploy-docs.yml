@@ -7,6 +7,12 @@ on:
     paths:
       - 'website/**'
       - 'scripts/generate-llms-full.sh'
+  pull_request:
+    branches:
+      - docs/docusaurus-site
+    paths:
+      - 'website/**'
+      - 'scripts/generate-llms-full.sh'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -40,6 +46,43 @@ jobs:
 
       - name: Generate llms-full.txt
         run: ./scripts/generate-llms-full.sh
+
+      - name: Validate token budget
+        run: |
+          WORD_COUNT=$(wc -w < website/static/llms-full.txt)
+          echo "📊 llms-full.txt word count: $WORD_COUNT / 37500"
+          if [ "$WORD_COUNT" -gt 37500 ]; then
+            echo "❌ Token budget exceeded! Max: 37500 words (~50K tokens)"
+            exit 1
+          fi
+          echo "✅ Token budget OK"
+
+      - name: Validate llms.txt
+        run: |
+          LLMS_FILE="website/static/llms.txt"
+
+          # Check file size (max 10KB = 10240 bytes)
+          FILE_SIZE=$(wc -c < "$LLMS_FILE")
+          FILE_SIZE_KB=$((FILE_SIZE / 1024))
+          echo "📊 llms.txt size: ${FILE_SIZE_KB}KB / 10KB ($FILE_SIZE bytes)"
+          if [ "$FILE_SIZE" -gt 10240 ]; then
+            echo "❌ llms.txt exceeds 10KB limit!"
+            exit 1
+          fi
+          echo "✅ Size OK"
+
+          # Check required sections per llmstxt.org spec
+          # AC2: Quick Start, Core Concepts (or Key Concepts), CLI Reference (or Commands)
+          MISSING=""
+          grep -q "^## Quick Start" "$LLMS_FILE" || MISSING="$MISSING 'Quick Start'"
+          grep -qE "^## (Core |Key )?Concepts" "$LLMS_FILE" || MISSING="$MISSING 'Concepts'"
+          grep -qE "^## (CLI Reference|.*Commands)" "$LLMS_FILE" || MISSING="$MISSING 'CLI/Commands'"
+
+          if [ -n "$MISSING" ]; then
+            echo "❌ Missing required sections: $MISSING"
+            exit 1
+          fi
+          echo "✅ Required sections present"
 
       - name: Build website
         working-directory: website
@@ -83,6 +126,8 @@ jobs:
           path: website/build
 
   deploy:
+    # Only deploy on push, not on PR (PR just validates)
+    if: github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
