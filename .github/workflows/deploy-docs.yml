@@ -34,9 +34,16 @@ jobs:
           cache: 'npm'
           cache-dependency-path: website/package-lock.json
 
+      - name: Clean npm cache
+        run: npm cache clean --force
+
       - name: Install dependencies
         working-directory: website
         run: npm ci
+
+      - name: Clear build caches
+        working-directory: website
+        run: rm -rf .docusaurus build
 
       - name: Generate llms-full.txt
         run: ./scripts/generate-llms-full.sh
@@ -44,6 +51,38 @@ jobs:
       - name: Build website
         working-directory: website
         run: npm run build
+
+      - name: Check internal links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: |
+            --verbose
+            --no-progress
+            --offline
+            --include-fragments
+            --timeout 30
+            --exclude-path 'website/build/search/**'
+            website/build
+          fail: true
+
+      - name: Check external links (non-blocking)
+        uses: lycheeverse/lychee-action@v2
+        continue-on-error: true
+        with:
+          cache: true
+          args: |
+            --verbose
+            --no-progress
+            --timeout 30
+            --scheme https
+            --scheme http
+            --exclude 'localhost'
+            --exclude '127.0.0.1'
+            --exclude 'tree/docs/docusaurus-site'
+            --exclude 'example.com'
+            --exclude 'mailto:'
+            --exclude-path 'website/build/search/**'
+            website/build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

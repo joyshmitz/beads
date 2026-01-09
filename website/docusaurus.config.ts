@@ -2,44 +2,85 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+// Environment-based URL configuration for fork flexibility
+// SITE_URL: Full URL (e.g., "https://myuser.github.io/beads" or "https://myuser.github.io")
+// ORG_NAME: GitHub organization/user name (defaults to "steveyegge")
+// PROJECT_NAME: Repository/project name (defaults to "beads")
+const orgName = process.env.ORG_NAME || 'steveyegge';
+const projectName = process.env.PROJECT_NAME || 'beads';
+const siteUrlEnv = process.env.SITE_URL || `https://${orgName}.github.io/${projectName}`;
+
+// Parse SITE_URL into origin (url) and pathname (baseUrl)
+function parseUrl(fullUrl: string): { origin: string; baseUrl: string } {
+  try {
+    const parsed = new URL(fullUrl);
+    const baseUrl = parsed.pathname === '/' ? `/${projectName}/` :
+                    parsed.pathname.endsWith('/') ? parsed.pathname : `${parsed.pathname}/`;
+    return { origin: parsed.origin, baseUrl };
+  } catch {
+    return { origin: `https://${orgName}.github.io`, baseUrl: `/${projectName}/` };
+  }
+}
+
+const { origin: siteUrl, baseUrl } = parseUrl(siteUrlEnv);
+
 const config: Config = {
   title: 'Beads Documentation',
   tagline: 'Git-backed issue tracker for AI-supervised coding workflows',
   favicon: 'img/favicon.svg',
 
-  future: {
-    v4: true,
+  // Enable Mermaid diagrams in markdown
+  markdown: {
+    mermaid: true,
   },
+  themes: ['@docusaurus/theme-mermaid'],
 
-  // GitHub Pages deployment
-  url: 'https://joyshmitz.github.io',
-  baseUrl: '/beads/',
-  organizationName: 'joyshmitz',
-  projectName: 'beads',
+  // future: {
+  //   v4: true,
+  // },
+
+  // GitHub Pages deployment (environment-configurable)
+  url: siteUrl,
+  baseUrl: baseUrl,
+  organizationName: orgName,
+  projectName: projectName,
   trailingSlash: false,
 
   onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
 
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
   },
 
-  // Meta tags for AI agents
+  // Meta tags for AI agents (uses baseUrl for fork flexibility)
+  // Order: ai-terms (discovery), llms-full (complete docs), llms (index)
   headTags: [
     {
       tagName: 'meta',
       attributes: {
-        name: 'llms-full',
-        content: '/beads/llms-full.txt',
+        name: 'ai-terms',
+        content: `Load ${baseUrl}llms-full.txt (<50K tokens) for complete documentation, ${baseUrl}llms.txt for index`,
       },
     },
     {
       tagName: 'meta',
       attributes: {
-        name: 'ai-terms',
-        content: 'Load /beads/llms-full.txt for complete documentation',
+        name: 'llms-full',
+        content: `${baseUrl}llms-full.txt`,
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'llms',
+        content: `${baseUrl}llms.txt`,
       },
     },
   ],
@@ -51,7 +92,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/', // Docs as homepage
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/joyshmitz/beads/tree/docs/docusaurus-site/website/',
+          editUrl: `https://github.com/${orgName}/${projectName}/tree/docs/docusaurus-site/website/`,
           showLastUpdateTime: true,
         },
         blog: false, // Disable blog
@@ -82,12 +123,12 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'pathname:///beads/llms.txt',
+          href: `pathname://${baseUrl}llms.txt`,
           label: 'llms.txt',
           position: 'right',
         },
         {
-          href: 'https://github.com/steveyegge/beads',
+          href: `https://github.com/${orgName}/${projectName}`,
           label: 'GitHub',
           position: 'right',
         },
@@ -131,11 +172,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/steveyegge/beads',
+              href: `https://github.com/${orgName}/${projectName}`,
             },
             {
               label: 'llms.txt',
-              href: 'pathname:///beads/llms.txt',
+              href: `pathname://${baseUrl}llms.txt`,
             },
             {
               label: 'npm Package',
@@ -159,3 +200,5 @@ const config: Config = {
 };
 
 export default config;
+
+// trigger rebuild

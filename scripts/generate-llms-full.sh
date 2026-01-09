@@ -15,7 +15,7 @@ cat > "$OUTPUT_FILE" << 'EOF'
 
 > This file contains the complete beads documentation for LLM consumption.
 > Generated automatically from the documentation source files.
-> For the web version, visit: https://joyshmitz.github.io/beads/
+> For the web version, visit: https://steveyegge.github.io/beads/
 
 ---
 
@@ -43,7 +43,7 @@ if [ -f "$DOCS_DIR/intro.md" ]; then
 fi
 
 # Process directories in logical order
-for dir in getting-started core-concepts cli-reference workflows multi-agent integrations reference; do
+for dir in getting-started core-concepts architecture cli-reference workflows multi-agent integrations recovery reference; do
     if [ -d "$DOCS_DIR/$dir" ]; then
         # Process index first if exists
         if [ -f "$DOCS_DIR/$dir/index.md" ]; then
