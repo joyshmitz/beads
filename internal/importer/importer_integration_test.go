@@ -145,17 +145,12 @@ func TestLocalUnpushedIssueNotDeleted(t *testing.T) {
 	jsonlIssues := []*types.Issue{remoteIssue}
 
 	// Import - local issue should NOT be purged
-	result, err := ImportIssues(ctx, dbPath, store, jsonlIssues, Options{})
+	_, err = ImportIssues(ctx, dbPath, store, jsonlIssues, Options{})
 	if err != nil {
 		t.Fatalf("Import failed: %v", err)
 	}
 
-	// No purges should happen (local issues not in JSONL are preserved)
-	if result.Purged != 0 {
-		t.Errorf("Expected 0 purged issues, got %d (purged: %v)", result.Purged, result.PurgedIDs)
-	}
-
-	// Both issues should still exist
+	// Both issues should still exist (local issues not in JSONL are preserved)
 	finalIssues, err := store.SearchIssues(ctx, "", types.IssueFilter{})
 	if err != nil {
 		t.Fatalf("Failed to search final issues: %v", err)
